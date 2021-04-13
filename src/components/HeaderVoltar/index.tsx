@@ -1,4 +1,5 @@
 import React from 'react';
+import { FiArrowLeft } from 'react-icons/fi';
 
 import { Link } from 'react-router-dom';
 import {
@@ -20,6 +21,11 @@ const Header: React.FC = () => {
   return (
       <Headers>
         <HeaderContent>
+
+          <Link to="/dashboard">
+            <FiArrowLeft />
+          </Link>
+            
           <img src={logoImg} alt="AB" />
 
           <Profile>

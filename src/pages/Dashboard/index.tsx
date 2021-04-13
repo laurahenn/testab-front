@@ -1,189 +1,121 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
-import { isToday, format } from 'date-fns';
-
-import DayPicker, { DayModifiers } from 'react-day-picker';
 import 'react-day-picker/lib/style.css';
 
-import { FiClock } from 'react-icons/fi';
-
+import { FiEye } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
+
+import Button from '../../components/Button';
+import Header from '../../components/Header';
+import { useAuth } from '../../hooks/auth';
+
 import {
   Container,
   Content,
-  Schedule,
-  NextAppointment,
-  Appointment,
   Section,
-  Calendar,
+  Listings,
+  Details,
+  Records,
+  RecordsDetails,
+  Options,
+  Menu,
+  Info,
 } from './styles';
 
-import ButtonC from '../../components/ButtonC';
-import Header from '../../components/Header';
-
-import { useAuth } from '../../hooks/auth';
-import api from '../../services/api';
-import { useToast } from '../../hooks/toast';
-
-
-interface Appointment {
-  id: string;
-  nome: string;
-  data: string;
-  hora_inicio: string;
-  hora_fim: string;
-  lugar: string;
-  preco: string;
-}
 
 const Dashboard: React.FC = () => {
   const { user, signOut } = useAuth();
-  const { addToast } = useToast();
-
-  const [selectedDate, setSelectedDate] = useState(new Date());
-
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-
-  const handleDateChange = useCallback((day: Date, modifiers: DayModifiers) => {
-    if (modifiers.available) {
-      setSelectedDate(day);
-    }
-  }, []);
-
-  const handleMonthChange = useCallback((month: Date) => {
-    setSelectedDate(month);
-  }, []);
-
-  // Dia selecionado
-  const selectedDateAsText = useMemo(() => {
-    return format(selectedDate, "'Dia' dd 'de' MMMM", {
-      // locale: ptBR,
-    });
-  }, [selectedDate]);
-  // Dia da semana selecionado
-  const selectedWeekDay = useMemo(() => {
-    return format(selectedDate, 'cccc', {
-      // locale: ptBR,
-    });
-  }, [selectedDate]);
-
-  // busca na api os appointments no dia/mes/ano selecionado
-  useEffect(() => {
-    api
-      .get<Appointment[]>('/evento/eventos-dia', {
-        params: {
-          ano: selectedDate.getFullYear(),
-          mes: selectedDate.getMonth() + 1,
-          dia: selectedDate.getDate(),
-          usuario_id: user.id,
-        },
-      })
-      .then((response) => {
-        const appointmentsFormatted = response.data.map((appointment) => {
-          return {
-            ...appointment,
-            // hora_inicio: format(parseISO(appointment.hora_inicio), 'HH:mm'),
-          };
-        });
-
-        setAppointments(appointmentsFormatted);
-        console.log(response.data);
-      });
-  }, [selectedDate]);
-
-  // todos os Eventos
-  const allAppointments = useMemo(() => {
-    return appointments.filter((appointment) => {
-      return appointment;
-    });
-  }, [appointments]);
-
-  // Realiza a inscrição no evento.
-  async function handleClick(evento_id:any) {
-
-    try {
-
-      const data = {
-        "usuario_id" : user.id,
-        "evento_id" : evento_id
-      };
-      await api.post('usuario-evento', data);
-      
-      addToast({
-        type: 'success',
-        title: 'Inscrito!',
-        description: 'Legal! Você está inscrito nesse evento.',
-      });
-    } catch (err) {
-
-      addToast({
-        type: 'error',
-        title: 'Erro na Inscrição',
-        description: 'Ocorreu um erro ao fazer sua inscrição, tente novamente.',
-      });
-
-    }
-  }
-
+  
   return (
     <Container>
 
       <Header  />
+      <h1>Testes em execução</h1>
 
       <Content>
-        <Schedule>
-          <h1>Testes em execução</h1>
+        {/* Listagem */}
+        <Listings>
 
-          {/* <p>
-            {isToday(selectedDate) && <span>Hoje</span>}
-            <span>{selectedDateAsText}</span>
-            <span>{selectedWeekDay}</span>
-          </p> */}
+          <Section>
+              <Records key="1">
 
-          {/* <Section>
-            {allAppointments.map((appointment) => (
-              <Appointment key={appointment.id}>
-                <span>
-                  <FiClock />
-                  {appointment.hora_inicio} {appointment.hora_fim}
-                </span>
-                <div>
-                  <strong>{appointment.nome}</strong> - {appointment.lugar}
-                  <span>R$ {appointment.preco}</span>
-                  <Link to="#">
-                    <ButtonC type="submit" onClick={(evento_id) => handleClick(appointment.id)} >Me inscrever</ButtonC>
-                  </Link>
-                </div>
-              </Appointment>
-            ))}
-          </Section> */}
+                <Details>
+                  <p>Nome do teste</p>
+                  <span>20 Outubro 2020</span>
+                </Details>
 
-        </Schedule>
+                <RecordsDetails>
+                  <div>
+                    <span>A</span>
+                    <FiEye />
+                    <span>555 acessos</span>
+                    <Link to="/"> Detalhes </Link>
+                  </div>
+                </RecordsDetails>
+                <RecordsDetails>
+                  <div>
+                    <span>B</span>
+                    <FiEye />
+                    <span>558 acessos</span>
+                    <Link to="/"> Detalhes </Link>
+                  </div>
+                </RecordsDetails>
 
-        {/* <Calendar>
-          <DayPicker
-            weekdaysShort={['D', 'S', 'T', 'Q', 'Q', 'S', 'S']}
-            // fromMonth={new Date()}
-            // // disabledDays={[{ daysOfWeek: [0, 8] }]}
-            modifiers={{ available: { daysOfWeek: [0, 1, 2, 3, 4, 5, 6, 7] } }}
-            onMonthChange={handleMonthChange}
-            selectedDays={selectedDate}
-            onDayClick={handleDateChange}
-            months={[
-              'Jan',
-              'Fev',
-              'Mar',
-              'Abr',
-              'Mai',
-              'Jun',
-              'Jul',
-              'Ago',
-              'Set',
-              'Out',
-              'Nov',
-              'Dez',
-            ]}
-          />
-        </Calendar> */}
+                <Options>
+                  <Link to="/"> Relatório </Link>
+                  <span> 30 Novembro 2020 </span> 
+                </Options>
+                
+              </Records>
+              <Records key="2">
+
+                <Details>
+                  <p>Nome do teste</p>
+                  <span>20 Outubro 2020</span>
+                </Details>
+
+                <RecordsDetails>
+                  <div>
+                    <span>A</span>
+                    <FiEye />
+                    <span>555 acessos</span>
+                    <Link to="/"> Detalhes </Link>
+                  </div>
+                </RecordsDetails>
+                <RecordsDetails>
+                  <div>
+                    <span>B</span>
+                    <FiEye />
+                    <span>558 acessos</span>
+                    <Link to="/"> Detalhes </Link>
+                  </div>
+                </RecordsDetails>
+
+                <Options>
+                  <Link to="/"> Relatório </Link>
+                  <span> 30 Novembro 2020 </span> 
+                </Options>
+                
+              </Records>
+                
+          </Section>
+
+        </Listings>
+
+        {/* Painel */}
+        <Menu>
+
+          <Info>
+            <p>Total Testes AB</p>
+            <span>02</span>
+          </Info>
+          <Info>
+            <p>Total Acessos AB</p>
+            <span>2765</span>
+          </Info>
+          <Link to="/"> Novo Teste AB </Link>
+
+        </Menu>
+      
       </Content>
     </Container>
   );

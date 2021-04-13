@@ -1,4 +1,5 @@
 import React from 'react';
+import { FiArrowLeft } from 'react-icons/fi';
 
 import { Link } from 'react-router-dom';
 import {
@@ -11,27 +12,19 @@ import {
 import logoImg from '../../assets/logo.png';
 import { useAuth } from '../../hooks/auth';
 
-import placeholder from '../../assets/perfil.jpg';
-
-const Header: React.FC = () => {
+const HeaderPerfil: React.FC = () => {
 
   const { user, signOut } = useAuth();
 
   return (
       <Headers>
         <HeaderContent>
-          <img src={logoImg} alt="AB" />
 
-          <Profile>
-            {/* <img src={user.foto || placeholder} alt={user.nome} /> */}
-            <img src={placeholder} alt={user.nome} />
-            <div>
-              <span>Olá,</span> 
-              <Link to="/profile">
-                <strong> {user.nome}</strong>
-              </Link>
-            </div>
-          </Profile>
+          <Link to="/dashboard">
+            <FiArrowLeft />
+          </Link>
+            
+          <img src={logoImg} alt="AB" />
           
           <Opcoes>
             <div>
@@ -55,4 +48,4 @@ const Header: React.FC = () => {
   );
 };
 
-export default Header;
+export default HeaderPerfil;

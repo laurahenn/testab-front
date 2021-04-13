@@ -1,5 +1,5 @@
-import React, { useCallback, useRef } from 'react';
-import { FiMail, FiUser, FiLock, FiArrowLeft } from 'react-icons/fi';
+import React, { useCallback, useRef, ChangeEvent } from 'react';
+import { FiMail, FiUser, FiLock, FiCamera, FiArrowLeft } from 'react-icons/fi';
 import { FormHandles } from '@unform/core';
 import { Form } from '@unform/web';
 import * as Yup from 'yup';
@@ -7,21 +7,26 @@ import { useHistory, Link } from 'react-router-dom';
 
 import api from '../../services/api';
 
+import placeholder from '../../assets/perfil.jpg';
+
 import { useToast } from '../../hooks/toast';
 
 import getValidationErrors from '../../utils/getValidationErrors';
 
-import Input from '../../components/Input';
-import Button from '../../components/Button';
-
 import { Container, Content, AvatarInput } from './styles';
 import { useAuth } from '../../hooks/auth';
 
+// Componentes
+import Input from '../../components/Input';
+import Button from '../../components/Button';
+import HeaderPerfil from '../../components/HeaderPerfil';
+
 interface ProfileFormData {
-  nome: string;
+  name: string;
   email: string;
-  login: string;
-  password: string;
+  old_password: string;
+  senha: string;
+  password_confirmation: string;
 }
 
 const Profile: React.FC = () => {
@@ -29,47 +34,68 @@ const Profile: React.FC = () => {
   const { addToast } = useToast();
   const history = useHistory();
 
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
 
   const handleSubmit = useCallback(
-    
     async (data: ProfileFormData) => {
       try {
-      
         formRef.current?.setErrors({});
 
         const schema = Yup.object().shape({
-          nome: Yup.string().required('Nome obrigatório'),
+          name: Yup.string().required('Nome obrigatório'),
           email: Yup.string()
             .required('E-mail obrigatório')
             .email('Digite um e-mail válido'),
-          login: Yup.string().required('Login obrigatório'),
-          password: Yup.string().min(6, 'No mínimo 6 dígitos'),
+          old_password: Yup.string(),
+          senha: Yup.string().when('old_password', {
+            is: val => !!val.length,
+            then: Yup.string().required('Campo obrigatório'),
+            otherwise: Yup.string(),
+          }),
+          password_confirmation: Yup.string()
+            .when('old_password', {
+              is: val => !!val.length,
+              then: Yup.string().required('Campo obrigatório'),
+              otherwise: Yup.string(),
+            })
+            .oneOf([Yup.ref('senha'), ''], 'Confirmação incorreta'),
         });
 
         await schema.validate(data, {
           abortEarly: false,
         });
 
-        console.log(data);
+        const {
+          name,
+          email,
+          old_password,
+          senha,
+          password_confirmation,
+        } = data;
 
+        const formData = {
+          name,
+          email,
+          ...(old_password
+            ? {
+                old_password,
+                senha,
+                password_confirmation,
+              }
+            : {}),
+        };
 
-        const config = {
-          
-            "user_id": user.id,
-            "nome": data.nome,
-            "email": data.email,
-            "old_password": data.password,
-            "password": data.password
-          
-        }
+        const response = await api.put('profile', formData);
 
-        await api.put('users', config);
+        updateUser(response.data);
+
+        history.push('/dashboard');
 
         addToast({
           type: 'success',
-          title: 'Cadastro atualizado!',
-          description: 'Você atualizou as informações do seu usuário!',
+          title: 'Perfil atualizado!',
+          description:
+            'Suas informações do perfil foram atualizadas com sucesso!',
         });
 
         history.push('/');
@@ -84,58 +110,90 @@ const Profile: React.FC = () => {
 
         addToast({
           type: 'error',
-          title: 'Erro no cadastro',
-          description: 'Ocorreu um erro ao fazer cadastro, tente novamente.',
+          title: 'Erro na atualização',
+          description:
+            'Ocorreu um erro ao atualizar seu perfil, tente novamente.',
         });
       }
     },
-    [addToast, history],
+    [addToast, history, updateUser],
+  );
+
+  const handleAvatarChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files) {
+        const data = new FormData();
+
+        data.append('avatar', e.target.files[0]);
+
+        api.patch('/users/avatar', data).then(response => {
+          updateUser(response.data);
+
+          addToast({
+            type: 'success',
+            title: 'Avatar atualizado!',
+          });
+        });
+      }
+    },
+    [addToast, updateUser],
   );
 
   return (
     <Container>
-      <header>
+
+      <HeaderPerfil  />
+
+      {/* <header>
         <div>
           <Link to="/dashboard">
             <FiArrowLeft />
           </Link>
         </div>
-      </header>
+      </header> */}
 
       <Content>
         <Form
           ref={formRef}
-          initialData={{ nome: user.nome, email: user.email }}
+          initialData={{
+            name: user.nome,
+            email: user.email,
+          }}
           onSubmit={handleSubmit}
         >
           <AvatarInput>
-            <img
-              src="https://images.unsplash.com/photo-1589682835112-169d39a60b78?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=80"
-              alt={user.nome}
-            />
+            {/* <img src={user.foto || placeholder} alt={user.nome} /> */}
+            <img src={placeholder} alt={user.nome} />
+            <label htmlFor="avatar">
+              <FiCamera />
+
+              <input type="file" id="avatar" onChange={handleAvatarChange} />
+            </label>
           </AvatarInput>
 
           <h1>Meu perfil</h1>
 
-          <Input name="nome" icon={FiUser} placeholder="Nome" />
+          <Input name="name" icon={FiUser} placeholder="Nome" />
           <Input name="email" icon={FiMail} placeholder="E-mail" />
-          {/* <Input name="login" icon={FiUser} placeholder="Login" /> */}
           <Input
+            // containerStyle={{ marginTop: 24 }}
             name="old_password"
             icon={FiLock}
-            type="password"
+            type="senha"
             placeholder="Senha atual"
           />
+
           <Input
-            name="password"
+            name="senha"
             icon={FiLock}
-            type="password"
+            type="senha"
             placeholder="Nova senha"
           />
+
           <Input
             name="password_confirmation"
             icon={FiLock}
-            type="password"
+            type="senha"
             placeholder="Confirmar senha"
           />
 

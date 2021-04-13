@@ -107,7 +107,7 @@ const SignIn: React.FC = () => {
             <Button type="submit">Redefinir senha</Button>
           </Form>
 
-          <Link to="/signin">
+          <Link to="/">
             <FiLogIn />
             Voltar ao login
           </Link>
