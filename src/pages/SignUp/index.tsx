@@ -22,7 +22,9 @@ interface SignUpFormData {
   nome: string;
   email: string;
   senha: string;
-  permissao_id: number;
+  permissao_id: number;  
+	foto: string;
+  ativo: boolean;
 }
 
 const SignUp: React.FC = () => {
@@ -44,14 +46,16 @@ const SignUp: React.FC = () => {
         });
 
         data.permissao_id = 1;
-
+        data.foto = "perfil.jpg";
+        data.ativo = true;
+        
         console.log(data);
 
         await schema.validate(data, {
           abortEarly: false,
         });
 
-        await api.post('novo-usuario', data);
+        await api.post('usuarios', data);
 
         addToast({
           type: 'success',

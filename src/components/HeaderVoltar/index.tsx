@@ -17,6 +17,7 @@ import placeholder from '../../assets/perfil.jpg';
 const Header: React.FC = () => {
 
   const { user, signOut } = useAuth();
+  const foto = "http://localhost:3333/files/"+user.foto;
 
   return (
       <Headers>
@@ -29,8 +30,7 @@ const Header: React.FC = () => {
           <img src={logoImg} alt="AB" />
 
           <Profile>
-            {/* <img src={user.foto || placeholder} alt={user.nome} /> */}
-            <img src={placeholder} alt={user.nome} />
+            <img src={foto} alt={user.nome} />
             <div>
               <span>Olá,</span> 
               <Link to="/profile">

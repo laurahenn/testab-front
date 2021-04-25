@@ -35,6 +35,7 @@ const Profile: React.FC = () => {
   const history = useHistory();
 
   const { user, updateUser } = useAuth();
+  const foto = "http://localhost:3333/files/"+user.foto;
 
   const handleSubmit = useCallback(
     async (data: ProfileFormData) => {
@@ -162,8 +163,7 @@ const Profile: React.FC = () => {
           onSubmit={handleSubmit}
         >
           <AvatarInput>
-            {/* <img src={user.foto || placeholder} alt={user.nome} /> */}
-            <img src={placeholder} alt={user.nome} />
+            <img src={foto} alt={user.nome} />
             <label htmlFor="avatar">
               <FiCamera />
 
