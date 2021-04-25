@@ -22,7 +22,7 @@ interface SignUpFormData {
   nome: string;
   email: string;
   senha: string;
-  permissao_id: number;  
+  permissao_id: number;
 	foto: string;
   ativo: boolean;
 }
@@ -45,10 +45,10 @@ const SignUp: React.FC = () => {
           senha: Yup.string().min(6, 'No mínimo 6 dígitos')
         });
 
-        data.permissao_id = 1;
+        data.permissao_id = 2;
         data.foto = "perfil.jpg";
         data.ativo = true;
-        
+
         console.log(data);
 
         await schema.validate(data, {
